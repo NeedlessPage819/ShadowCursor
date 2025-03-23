@@ -128,10 +128,6 @@ FAST_MOVEMENT_SPEED = 3   # Speed when holding shift
 POLL_RATE = 0.001         # Input polling rate (lower = more responsive)
 ```
 
-## Building From Source
-
-For detailed build instructions, see [VCPKG_SETUP.md](VCPKG_SETUP.md).
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
