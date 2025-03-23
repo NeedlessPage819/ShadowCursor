@@ -1,10 +1,11 @@
 # ShadowCursor
 
-A Python module providing undetectable, low-latency mouse cursor control that bypasses anti-cheat mechanisms by using native, hardware-level cursor manipulation techniques.
+A Python module providing undetectable, low-latency mouse cursor control that bypasses anti-cheat mechanisms by using native, hardware-level cursor manipulation techniques with advanced humanization features.
 
 ## Features
 
 - **Undetectable Movement**: Uses alternative mouse movement methods that bypass traditional anti-cheat detection
+- **Human-like Movement**: Advanced humanization features including bezier curves, jitter, and variable delays
 - **Low-Latency Control**: Optimized for minimal input lag and responsive cursor movement
 - **Pixel-Perfect Precision**: Single-pixel movement capability for fine-grained control
 - **Multi-Threaded Design**: Background processing to avoid blocking the main application
@@ -74,7 +75,7 @@ mouse_control.left(5)  # Move 5 pixels left
 mouse_control.right(5) # Move 5 pixels right
 ```
 
-### Advanced Usage
+### Advanced Usage with Humanization
 
 ```python
 import mouse_control
@@ -83,17 +84,23 @@ import mouse_control
 control = mouse_control.CursorControl()
 control.initialize()
 
-# Move the cursor
-control.move(1, 1)     # Move 1 pixel diagonally
-control.move_to(800, 600)  # Move to coordinates (800, 600)
+# Configure humanization settings
+control.humanization_level = 7       # 0-10 scale (0=none, 10=maximum)
+control.jitter_amount = 3            # Pixels of random movement (0-10)
+control.movement_delay = 80          # Microseconds between movements
+control.path_deviation = 0.2         # Path deviation factor (0.0-1.0)
+control.movement_style = 1           # 0=direct, 1=bezier curve, 2=random
 
-# Get current position
-x, y = control.get_position()
+# Move the cursor with humanized movement
+control.move(5, 5)
+control.move_to(800, 600)  # Uses bezier curve for longer movements
 
-# Enable/disable cursor control
-control.enabled = False
-# ... later ...
-control.enabled = True
+# Module-level humanization configuration
+mouse_control.set_humanization_level(5)
+mouse_control.set_jitter_amount(2)
+mouse_control.set_movement_delay(100)
+mouse_control.set_path_deviation(0.3)
+mouse_control.set_movement_style(1)
 ```
 
 ## How It Works
@@ -105,6 +112,8 @@ ShadowCursor uses several techniques to avoid detection:
 3. **Optimized Low-latency Movement**: Custom implementation for minimal input lag
 4. **Movement Limit Control**: Ensures precise movements with configurable speed
 5. **Natural Jitter Patterns**: Adds subtle human-like movement variations
+6. **Bezier Curve Paths**: Creates smooth, natural movement paths for longer distances
+7. **Variable Timing**: Randomizes delays between movements to mimic human behavior
 
 ## Example Controls
 
@@ -114,6 +123,10 @@ The included example (mouse_example.py) provides these controls:
 - **Hold Shift**: Move cursor faster (3 pixels instead of 1)
 - **T**: Toggle mouse control on/off
 - **G**: Print current cursor position
+- **1-5**: Set humanization level (1=low, 5=high)
+- **F1**: Toggle between movement styles (direct, bezier, random)
+- **F2/F3**: Decrease/increase jitter amount
+- **F4/F5**: Decrease/increase movement delay
 - **H**: Show help information
 - **Q**: Quit the program
 
@@ -126,7 +139,26 @@ You can easily customize the cursor behavior by modifying these settings in mous
 MOVEMENT_SPEED = 1        # Default pixels per movement
 FAST_MOVEMENT_SPEED = 3   # Speed when holding shift
 POLL_RATE = 0.001         # Input polling rate (lower = more responsive)
+
+# Humanization settings
+controller.humanization_level = 5    # Overall humanization (0-10)
+controller.jitter_amount = 2         # Random movement jitter (0-10 pixels)
+controller.movement_delay = 100      # Delay between movements (microseconds)
+controller.path_deviation = 0.3      # Path randomness factor (0.0-1.0)
+controller.movement_style = 1        # Movement algorithm (0-2)
 ```
+
+## Example Modes
+
+The example program includes three demonstration modes:
+
+1. **Basic Mouse Control**: Interactive keyboard-controlled cursor movement
+2. **Module-level Functions**: Demonstrates using the global module functions
+3. **Valorant-like Aim Simulation**: Shows how the module can be used for FPS-style aiming with human-like movements
+
+## Building From Source
+
+For detailed build instructions, see [VCPKG_SETUP.md](VCPKG_SETUP.md).
 
 ## License
 
