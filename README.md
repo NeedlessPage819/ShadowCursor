@@ -156,10 +156,6 @@ The example program includes three demonstration modes:
 2. **Module-level Functions**: Demonstrates using the global module functions
 3. **Valorant-like Aim Simulation**: Shows how the module can be used for FPS-style aiming with human-like movements
 
-## Building From Source
-
-For detailed build instructions, see [VCPKG_SETUP.md](VCPKG_SETUP.md).
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
