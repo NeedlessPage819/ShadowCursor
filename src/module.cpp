@@ -19,7 +19,24 @@ PYBIND11_MODULE(mouse_control, m) {
              py::arg("x"), py::arg("y"))
         .def_property("enabled", 
                      &CursorControl::IsEnabled, 
-                     &CursorControl::SetEnabled);
+                     &CursorControl::SetEnabled)
+        
+        // Expose humanization methods
+        .def_property("humanization_level",
+                     &CursorControl::GetHumanizationLevel,
+                     &CursorControl::SetHumanizationLevel)
+        .def_property("jitter_amount",
+                     &CursorControl::GetJitterAmount,
+                     &CursorControl::SetJitterAmount)
+        .def_property("movement_delay",
+                     &CursorControl::GetMovementDelay,
+                     &CursorControl::SetMovementDelay)
+        .def_property("path_deviation",
+                     &CursorControl::GetPathDeviation,
+                     &CursorControl::SetPathDeviation)
+        .def_property("movement_style",
+                     &CursorControl::GetMovementStyle,
+                     &CursorControl::SetMovementStyle)
         
         .def("move_up", [](CursorControl &self, int pixels) { 
                 return self.MoveCursor(0, -pixels); 
@@ -110,4 +127,65 @@ PYBIND11_MODULE(mouse_control, m) {
         
         return controller.MoveCursor(pixels, 0);
     }, py::arg("pixels") = 5);
+    
+    // Add humanization configuration at module level
+    m.def("set_humanization_level", [](int level) {
+        static CursorControl controller;
+        static bool initialized = false;
+        
+        if (!initialized) {
+            controller.Initialize();
+            initialized = true;
+        }
+        
+        controller.SetHumanizationLevel(level);
+    }, py::arg("level"), "Set humanization level (0-10, 0=none, 10=maximum)");
+    
+    m.def("set_jitter_amount", [](int amount) {
+        static CursorControl controller;
+        static bool initialized = false;
+        
+        if (!initialized) {
+            controller.Initialize();
+            initialized = true;
+        }
+        
+        controller.SetJitterAmount(amount);
+    }, py::arg("amount"), "Set jitter amount (0-10 pixels)");
+    
+    m.def("set_movement_delay", [](int microseconds) {
+        static CursorControl controller;
+        static bool initialized = false;
+        
+        if (!initialized) {
+            controller.Initialize();
+            initialized = true;
+        }
+        
+        controller.SetMovementDelay(microseconds);
+    }, py::arg("microseconds"), "Set delay between movements in microseconds");
+    
+    m.def("set_path_deviation", [](double deviation) {
+        static CursorControl controller;
+        static bool initialized = false;
+        
+        if (!initialized) {
+            controller.Initialize();
+            initialized = true;
+        }
+        
+        controller.SetPathDeviation(deviation);
+    }, py::arg("deviation"), "Set path deviation (0.0-1.0)");
+    
+    m.def("set_movement_style", [](int style) {
+        static CursorControl controller;
+        static bool initialized = false;
+        
+        if (!initialized) {
+            controller.Initialize();
+            initialized = true;
+        }
+        
+        controller.SetMovementStyle(style);
+    }, py::arg("style"), "Set movement style (0=direct, 1=bezier, 2=random)");
 } 

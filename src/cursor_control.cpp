@@ -32,7 +32,9 @@ void MovementQueue::stop() {
     cv.notify_all();
 }
 
-CursorControl::CursorControl() : isInitialized(false), isEnabled(true) {
+CursorControl::CursorControl() : isInitialized(false), isEnabled(true),
+    humanizationLevel(5), jitterAmount(2), movementDelay(100), 
+    pathDeviation(0.3), movementStyle(1) {
 }
 
 CursorControl::~CursorControl() {
@@ -56,15 +58,37 @@ void CursorControl::WorkerThread() {
     while (isInitialized && movementQueue.pop(deltaX, deltaY)) {
         if (!isEnabled) continue;
         POINT currentPos = GetCurrentPosition();
+        
+        // Choose movement method based on settings and randomness
         if (abs(deltaX) <= 5 && abs(deltaY) <= 5) {
-            SetCursorPos(currentPos.x + deltaX, currentPos.y + deltaY);
+            if (humanizationLevel > 0) {
+                HumanizedMovement(deltaX, deltaY);
+            } else {
+                SetCursorPos(currentPos.x + deltaX, currentPos.y + deltaY);
+            }
             continue;
         }
-        if (std::rand() % 2 == 0) {
+        
+        // Choose movement method based on style and randomness
+        int randomChoice = std::rand() % 10;
+        if (randomChoice < humanizationLevel) {
+            HumanizedMovement(deltaX, deltaY);
+        } else if (std::rand() % 2 == 0) {
             OptimizedMouseInput(deltaX, deltaY);
         } else {
             FastDirectAccess(currentPos.x + deltaX, currentPos.y + deltaY);
         }
+        
+        // Add variable delay based on humanization level
+        if (movementDelay > 0) {
+            int actualDelay = movementDelay;
+            if (humanizationLevel > 0) {
+                // Add some randomness to the delay
+                actualDelay += std::rand() % (movementDelay * humanizationLevel / 5);
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(actualDelay));
+        }
+        
         std::this_thread::yield();
     }
 }
@@ -72,6 +96,15 @@ void CursorControl::WorkerThread() {
 bool CursorControl::MoveCursor(int deltaX, int deltaY) {
     if (!isInitialized) {
         return false;
+    }
+    
+    // Apply humanization if enabled
+    if (humanizationLevel > 0) {
+        // Apply jitter based on humanization level
+        if (jitterAmount > 0) {
+            deltaX = ApplyJitter(deltaX);
+            deltaY = ApplyJitter(deltaY);
+        }
     }
     
     int limitedDeltaX = (deltaX == 0) ? 0 : (deltaX > 0 ? 1 : -1);
@@ -99,6 +132,18 @@ bool CursorControl::MoveCursorTo(int x, int y) {
     }
     
     POINT currentPos = GetCurrentPosition();
+    
+    // If humanization is enabled and we're moving a significant distance, use bezier curve
+    if (humanizationLevel > 0 && movementStyle == 1) {
+        int dx = x - currentPos.x;
+        int dy = y - currentPos.y;
+        
+        if (abs(dx) > 10 || abs(dy) > 10) {
+            return BezierCurveMovement(currentPos.x, currentPos.y, x, y);
+        }
+    }
+    
+    // Otherwise use standard movement
     int dx = x - currentPos.x;
     int dy = y - currentPos.y;
     
@@ -176,4 +221,152 @@ bool CursorControl::EmulateHardwareInput(int deltaX, int deltaY) {
     input.mi.dwFlags = MOUSEEVENTF_MOVE;
     SendInput(1, &input, sizeof(INPUT));
     return true;
+}
+
+// New humanization methods
+bool CursorControl::HumanizedMovement(int deltaX, int deltaY) {
+    POINT currentPos = GetCurrentPosition();
+    int targetX = currentPos.x + deltaX;
+    int targetY = currentPos.y + deltaY;
+    
+    // Add slight randomness to movement
+    int jitterX = (std::rand() % (jitterAmount + 1)) - (jitterAmount / 2);
+    int jitterY = (std::rand() % (jitterAmount + 1)) - (jitterAmount / 2);
+    
+    // Choose a random movement method based on humanization level
+    int method = std::rand() % 3;
+    
+    switch (method) {
+        case 0:
+            EmulateHardwareInput(deltaX + jitterX, deltaY + jitterY);
+            break;
+        case 1:
+            OptimizedMouseInput(deltaX + jitterX, deltaY + jitterY);
+            break;
+        case 2:
+            FastDirectAccess(targetX + jitterX, targetY + jitterY);
+            break;
+    }
+    
+    // Add a small random delay to simulate human reaction time
+    std::this_thread::sleep_for(std::chrono::microseconds(50 + (std::rand() % 50)));
+    
+    return true;
+}
+
+bool CursorControl::BezierCurveMovement(int startX, int startY, int endX, int endY) {
+    // Generate a bezier curve with control points
+    int numPoints = 10 + (std::rand() % 10) * (humanizationLevel / 2);
+    std::vector<POINT> curve = GenerateBezierCurve(startX, startY, endX, endY, 2);
+    
+    // Move along the curve
+    for (size_t i = 1; i < curve.size(); i++) {
+        // Add jitter based on humanization level
+        int jitterX = (std::rand() % (jitterAmount + 1)) - (jitterAmount / 2);
+        int jitterY = (std::rand() % (jitterAmount + 1)) - (jitterAmount / 2);
+        
+        SetCursorPos(curve[i].x + jitterX, curve[i].y + jitterY);
+        
+        // Variable delay between points
+        int delay = movementDelay + (std::rand() % movementDelay);
+        std::this_thread::sleep_for(std::chrono::microseconds(delay));
+    }
+    
+    // Ensure we end at the target position
+    SetCursorPos(endX, endY);
+    
+    return true;
+}
+
+std::vector<POINT> CursorControl::GenerateBezierCurve(int startX, int startY, int endX, int endY, int controlPoints) {
+    std::vector<POINT> curve;
+    
+    // Create control points with some randomness
+    std::vector<POINT> controls;
+    controls.push_back({startX, startY});
+    
+    for (int i = 0; i < controlPoints; i++) {
+        // Create control points that deviate from the straight line
+        double t = (i + 1.0) / (controlPoints + 1.0);
+        int lineX = startX + static_cast<int>(t * (endX - startX));
+        int lineY = startY + static_cast<int>(t * (endY - startY));
+        
+        // Add deviation based on pathDeviation setting
+        int maxDeviation = static_cast<int>((abs(endX - startX) + abs(endY - startY)) * pathDeviation);
+        int deviationX = (std::rand() % (maxDeviation * 2 + 1)) - maxDeviation;
+        int deviationY = (std::rand() % (maxDeviation * 2 + 1)) - maxDeviation;
+        
+        controls.push_back({lineX + deviationX, lineY + deviationY});
+    }
+    
+    controls.push_back({endX, endY});
+    
+    // Generate points along the curve
+    int numPoints = 20 + humanizationLevel * 3;
+    for (int i = 0; i <= numPoints; i++) {
+        double t = static_cast<double>(i) / numPoints;
+        
+        // De Casteljau's algorithm for bezier curve
+        std::vector<POINT> temp = controls;
+        for (int j = controls.size() - 1; j > 0; j--) {
+            for (int k = 0; k < j; k++) {
+                temp[k].x = static_cast<int>((1 - t) * temp[k].x + t * temp[k + 1].x);
+                temp[k].y = static_cast<int>((1 - t) * temp[k].y + t * temp[k + 1].y);
+            }
+        }
+        
+        curve.push_back(temp[0]);
+    }
+    
+    return curve;
+}
+
+int CursorControl::ApplyJitter(int value) {
+    if (jitterAmount <= 0) return value;
+    
+    // Apply jitter proportional to the value and jitter amount
+    int maxJitter = std::min(jitterAmount, abs(value) / 2 + 1);
+    int jitter = (std::rand() % (maxJitter * 2 + 1)) - maxJitter;
+    return value + jitter;
+}
+
+// Humanization getters and setters
+void CursorControl::SetHumanizationLevel(int level) {
+    humanizationLevel = std::max(0, std::min(10, level));
+}
+
+int CursorControl::GetHumanizationLevel() const {
+    return humanizationLevel;
+}
+
+void CursorControl::SetJitterAmount(int amount) {
+    jitterAmount = std::max(0, std::min(10, amount));
+}
+
+int CursorControl::GetJitterAmount() const {
+    return jitterAmount;
+}
+
+void CursorControl::SetMovementDelay(int microseconds) {
+    movementDelay = std::max(0, std::min(10000, microseconds));
+}
+
+int CursorControl::GetMovementDelay() const {
+    return movementDelay;
+}
+
+void CursorControl::SetPathDeviation(double deviation) {
+    pathDeviation = std::max(0.0, std::min(1.0, deviation));
+}
+
+double CursorControl::GetPathDeviation() const {
+    return pathDeviation;
+}
+
+void CursorControl::SetMovementStyle(int style) {
+    movementStyle = std::max(0, std::min(2, style));
+}
+
+int CursorControl::GetMovementStyle() const {
+    return movementStyle;
 } 
