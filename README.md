@@ -105,15 +105,16 @@ mouse_control.set_movement_style(1)
 
 ## How It Works
 
-ShadowCursor uses several techniques to avoid detection:
+ShadowCursor uses a signed driver to achieve undetectable mouse control:
 
-1. **Direct Hardware Access**: Bypasses standard OS input APIs
-2. **Multi-threaded Processing**: Handles cursor movement in a background thread
-3. **Optimized Low-latency Movement**: Custom implementation for minimal input lag
-4. **Movement Limit Control**: Ensures precise movements with configurable speed
-5. **Natural Jitter Patterns**: Adds subtle human-like movement variations
-6. **Bezier Curve Paths**: Creates smooth, natural movement paths for longer distances
-7. **Variable Timing**: Randomizes delays between movements to mimic human behavior
+1. **Low-level Driver**: Interfaces directly with the operating system and hardware
+2. **Signed Driver**: Digitally signed to prevent tampering and reverse engineering 
+3. **Multi-threaded Processing**: Handles cursor movement in a background thread
+4. **Optimized Low-latency Movement**: Custom implementation for minimal input lag
+5. **Movement Limit Control**: Ensures precise movements with configurable speed
+6. **Natural Jitter Patterns**: Adds subtle human-like movement variations
+7. **Bezier Curve Paths**: Creates smooth, natural movement paths for longer distances
+8. **Variable Timing**: Randomizes delays between movements to mimic human behavior
 
 ## Example Controls
 
@@ -155,6 +156,96 @@ The example program includes three demonstration modes:
 1. **Basic Mouse Control**: Interactive keyboard-controlled cursor movement
 2. **Module-level Functions**: Demonstrates using the global module functions
 3. **Valorant-like Aim Simulation**: Shows how the module can be used for FPS-style aiming with human-like movements
+
+## Building From Source
+
+To build ShadowCursor from source, you'll need to follow these steps:
+
+### Prerequisites
+
+Make sure you have the following tools installed:
+
+- **Windows 10/11**: ShadowCursor is designed for Windows and requires version 10 or newer.
+- **Python 3.6 or later**: You can download Python from the [official website](https://www.python.org/downloads/). Make sure to add Python to your PATH during installation.
+- **Visual Studio 2019 or 2022**: Install Visual Studio with the "Desktop development with C++" workload. You can use the [Community edition](https://visualstudio.microsoft.com/vs/community/) for free.
+- **vcpkg**: Follow the [official instructions](https://github.com/microsoft/vcpkg#getting-started) to install vcpkg. Make sure to integrate it with your Visual Studio installation.
+
+### Build Steps
+
+1. Clone the ShadowCursor repository:
+   ```bash
+   git clone https://github.com/NeedlessPage819/ShadowCursor.git
+   cd ShadowCursor
+   ```
+
+2. Set the `VCPKG_ROOT` environment variable to your vcpkg installation directory:
+   ```bash
+   setx VCPKG_ROOT "C:\path\to\vcpkg"
+   ```
+
+3. Run the build script:
+   ```bash
+   build.bat
+   ```
+   This script will:
+   - Check for the required tools (Python, Visual Studio, vcpkg)
+   - Install the pybind11 dependency via vcpkg
+   - Configure and run the CMake build
+   - Copy the compiled module to the project directory
+
+4. Verify the build by running the example:
+   ```bash
+   python mouse_example.py
+   ```
+   If the example runs without errors and you can control the mouse, the build was successful.
+
+### Troubleshooting
+
+- If the build script fails with an error about missing tools, make sure you have installed all the prerequisites correctly and that their paths are set up properly.
+- If you encounter build errors related to missing headers or libraries, try updating your vcpkg packages:
+  ```bash
+  vcpkg update
+  vcpkg upgrade --no-dry-run
+  ```
+- If the example fails to run due to missing DLLs, make sure the compiled module is in the same directory as your Python script and that the module's dependencies are available on your system PATH.
+
+### Manual Build
+
+If you prefer to build ShadowCursor manually using CMake, follow these steps:
+
+1. Create a build directory:
+   ```bash
+   mkdir build
+   cd build
+   ```
+
+2. Run CMake configuration:
+   ```bash
+   cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ..
+   ```
+
+3. Build the project:
+   ```bash
+   cmake --build . --config Release
+   ```
+
+4. Copy the compiled module to the project directory:
+   ```bash
+   copy Release\mouse_control.pyd ..
+   ```
+
+### Integration
+
+To use ShadowCursor in your own Python projects:
+
+1. Copy the `mouse_control.pyd` file from the `ShadowCursor` directory to your project directory.
+
+2. Import the module in your Python code:
+   ```python
+   import mouse_control
+   ```
+
+3. Use the ShadowCursor API functions as described in the [Usage](#usage) section.
 
 ## License
 
