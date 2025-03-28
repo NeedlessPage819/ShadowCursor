@@ -48,6 +48,7 @@ endif()
 pybind11_add_module(mouse_control 
     src/module.cpp
     src/cursor_control.cpp
+    src/driver.cpp
 )
 
 if(WIN32)
