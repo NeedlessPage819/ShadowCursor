@@ -249,7 +249,17 @@ To use ShadowCursor in your own Python projects:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+The "Totally Not Our Fault" License (MIT)
+Copyright (c) 2025 ShadowCursor Contributors
+
+Congratulations! You are now in possession of some fine software, absolutely free of charge. You are hereby granted permission to do pretty much whatever you want with it—use it, copy it, modify it, merge it, publish it, distribute it, even sell it (if you can convince someone to pay for it). You can also sublicense it, though we can’t promise anyone will listen.
+
+The only catch? You must include this notice in all copies or substantial portions of the software. You know, so people remember where it came from.
+
+Now, The Serious Bit:
+This software is provided "as is," with absolutely no warranties. That means if it breaks, melts your computer, triggers an AI uprising, or somehow causes your cat to ignore you more than usual, we are not responsible.
+
+By using this software, you acknowledge that we, the ShadowCursor Contributors, will not be held liable for any damages, losses, or existential crises that may arise from its use.
 
 ## Disclaimer
 
