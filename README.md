@@ -263,4 +263,4 @@ By using this software, you acknowledge that we, the ShadowCursor Contributors, 
 
 ## Disclaimer
 
-This project is for educational purposes only. Use responsibly and in accordance with the terms of service of any software you interact with. 
+This project is for educational purposes only. Use responsibly and in accordance with the terms of service of any software you interact with. (optional)
