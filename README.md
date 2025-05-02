@@ -15,7 +15,7 @@ A Python module providing undetectable, low-latency mouse cursor control that by
 ## Requirements
 
 - Windows 10/11
-- Python 3.6 or newer
+- Python 3.11 required for pybind11
 - Visual Studio 2019 or 2022 with C++ workload
 - vcpkg package manager
 
